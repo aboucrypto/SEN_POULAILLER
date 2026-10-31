@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#173f2a">
+  <meta name="description" content="Gestion du poulailler SADIKH SERVICES, utilisable hors connexion.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>SADIKH SERVICES – Gestion Poulailler</title>
+</head>
+<body>
+  <header class="top">
+    <img src="assets/logo.jpg" alt="Logo SADIKH SERVICES" class="logo" onerror="this.style.display='none'">
+    <div><strong>SADIKH SERVICES</strong><small>GESTION POULAILLER</small></div>
+    <span id="netBadge" class="badge">Hors ligne</span>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="section-head"><h1>Tableau de bord</h1><button id="syncBtn" class="primary">Synchroniser</button></div>
+      <p id="syncInfo" class="muted">Vos saisies sont conservées sur cet appareil. Configurez Supabase pour activer le cloud.</p>
+      <div class="stats">
+        <article><small>Lots</small><b id="statLots">0</b></article>
+        <article><small>Poulets restants</small><b id="statBirds">0</b></article>
+        <article><small>Ventes (FCFA)</small><b id="statSales">0</b></article>
+        <article><small>Dépenses (FCFA)</small><b id="statExpenses">0</b></article>
+        <article><small>Mortalités</small><b id="statDeaths">0</b></article>
+        <article><small>En attente cloud</small><b id="statPending">0</b></article>
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="Modules">
+      <button data-view="lots" class="active">Lots</button>
+      <button data-view="sales">Ventes</button>
+      <button data-view="expenses">Dépenses</button>
+      <button data-view="deaths">Mortalités</button>
+      <button data-view="vaccines">Vaccination</button>
+      <button data-view="stock">Stock</button>
+      <button data-view="customers">Clients</button>
+      <button data-view="reports">Reçus & rapports</button>
+      <button data-view="settings">Supabase</button>
+    </nav>
+
+    <section id="view" class="panel"></section>
+  </main>
+  <footer>© SADIKH SERVICES — Gestion Poulailler</footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
