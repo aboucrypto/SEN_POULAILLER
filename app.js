@@ -32,8 +32,32 @@ function renderModule(key){
 }
 function renderTable(key,data){
  if(!data.length)return '<div class="empty">Aucune donnée enregistrée pour le moment.</div>';
+ return '<div class="table-wrap"><table><thead><tr><th>Informations</th><th>Actions</th></tr></thead><tbody>'+
+ data.map(r=>'<tr><td>'+Object.entries(r).filter(([k])=>k!=='synced'&&k!=='id').map(([k,v])=>'<b>'+k+'</b> : '+v).join('<br>')+'</td><td><button onclick="editRecord(\''+key+'\',\''+r.id+'\')">Modifier</button> <button onclick="deleteRecord(\''+key+'\',\''+r.id+'\')">Supprimer</button></td></tr>').join('')+
+ '</tbody></table></div>';
+}
+function editRecord(key,id){
+ const data=read();
+ const item=data.find(r=>r.id===id);
+ if(!item)return;
  const fields=modules[key].fields;
- return `<div class="table-wrap"><table><thead><tr>${fields.slice(0,5).map(f=>`<th>${f[1]}</th>`).join('')}<th>Cloud</th></tr></thead><tbody>${data.slice().reverse().slice(0,50).map(r=>`<tr>${fields.slice(0,5).map(f=>`<td>${esc(r.payload[f[0]])}</td>`).join('')}<td>${r.synced?'<span class="status-ok">Synchronisé</span>':'<span class="status-warn">En attente</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+ const values={...item};
+ fields.forEach(([name,label])=>{
+  const current=values[name]??'';
+  const answer=prompt('Modifier '+label,current);
+  if(answer!==null)values[name]=answer;
+ });
+ const updated=data.map(r=>r.id===id?{...values,synced:false}:r);
+ write(updated);
+ renderModule(key);
+}
+
+function deleteRecord(key,id){
+ if(!confirm('Confirmer la suppression ?'))return;
+ const data=read();
+ const updated=data.map(r=>r.id===id?{...r,deleted:true,synced:false}:r);
+ write(updated);
+ renderModule(key);
 }
 function renderSettings(){
  const c=cfg();
@@ -53,18 +77,68 @@ async function auth(method){
  $('#authInfo').textContent=res.error?res.error.message:(method==='signUp'?'Compte créé. Vérifiez votre e-mail si la confirmation est demandée.':'Connexion réussie.');
 }
 async function syncNow(){
- if(!navigator.onLine){$('#syncInfo').textContent='Pas d’Internet : les données restent sur le téléphone.';return}
- const c=initClient();if(!c){$('#syncInfo').textContent='Configurez d’abord Supabase dans le menu Supabase.';return}
- const session=await c.auth.getSession();if(!session.data.session){$('#syncInfo').textContent='Connectez-vous à Supabase dans le menu Supabase.';return}
- const user=session.data.session.user;let records=read();const pending=records.filter(r=>!r.synced);
- if(!pending.length){$('#syncInfo').textContent='Tout est déjà synchronisé sur cet appareil.';return}
+ if(!navigator.onLine){
+  $('#syncInfo').textContent='Pas d’Internet : les données restent sur le téléphone.';
+  return;
+ }
+ const c=initClient();
+ if(!c){
+  $('#syncInfo').textContent='Configurez d’abord Supabase.';
+  return;
+ }
+ const session=await c.auth.getSession();
+ if(!session.data.session){
+  $('#syncInfo').textContent='Connectez-vous à Supabase.';
+  return;
+ }
+
+ const user=session.data.session.user;
+ let records=read();
+ const pending=records.filter(r=>!r.synced);
+
  $('#syncInfo').textContent='Synchronisation en cours…';
+
  for(const r of pending){
-  const row={client_id:r.id,user_id:user.id,module:r.module,payload:r.payload,created_at:r.createdAt};
+  const row={
+   client_id:r.id,
+   user_id:user.id,
+   module:r.module,
+   payload:r.payload,
+   created_at:r.createdAt
+  };
   const result=await c.from('farm_entries').upsert(row,{onConflict:'client_id'});
-  if(result.error){$('#syncInfo').textContent='Erreur de synchronisation : '+result.error.message;return}
+  if(result.error){
+   $('#syncInfo').textContent='Erreur : '+result.error.message;
+   return;
+  }
   r.synced=true;
  }
+
+ const pulled=await c.from('farm_entries')
+  .select('client_id,module,payload,created_at')
+  .order('created_at',{ascending:true});
+
+ if(pulled.error){
+  $('#syncInfo').textContent='Lecture cloud impossible : '+pulled.error.message;
+  return;
+ }
+
+ const localUnsynced=read().filter(r=>!r.synced);
+ const merged=(pulled.data||[]).map(row=>({
+  id:row.client_id,
+  module:row.module,
+  payload:row.payload,
+  createdAt:row.created_at,
+  synced:true
+ }));
+
+ for(const r of localUnsynced){
+  if(!merged.some(x=>x.id===r.id)) merged.push(r);
+ }
+
+ write(merged);
+ $('#syncInfo').textContent='Synchronisation terminée : '+pending.length+' envoyé(s), '+merged.length+' présent(s) sur cet appareil.';
+}
  write(records);
  // Télécharger aussi les données du compte pour les rendre visibles sur cet appareil.
  const pulled=await c.from('farm_entries').select('client_id,module,payload,created_at').order('created_at',{ascending:true});
