@@ -118,4 +118,7 @@ window.addEventListener('online',()=>{ $('#netBadge').textContent='Internet disp
 window.addEventListener('offline',()=>$('#netBadge').textContent='Hors ligne');
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 initClient();refreshStats();renderModule('lots');
+function visibleRecords(a=read()){
+  return a.filter(r=>!r.deleted && !(r.payload && r.payload._deleted));
+}
 $('#netBadge').textContent=navigator.onLine?'Internet disponible':'Hors ligne';
