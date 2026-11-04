@@ -51,7 +51,6 @@ function editRecord(key,id){
  write(updated);
  renderModule(key);
 }
-
 function deleteRecord(key,id){
  if(!confirm('Confirmer la suppression ?'))return;
  const data=read();
@@ -91,7 +90,6 @@ async function syncNow(){
   $('#syncInfo').textContent='Connectez-vous à Supabase.';
   return;
  }
-
  const user=session.data.session.user;
  let records=read();
  const pending=records.filter(r=>!r.synced);
@@ -113,16 +111,13 @@ async function syncNow(){
   }
   r.synced=true;
  }
-
  const pulled=await c.from('farm_entries')
   .select('client_id,module,payload,created_at')
   .order('created_at',{ascending:true});
-
  if(pulled.error){
   $('#syncInfo').textContent='Lecture cloud impossible : '+pulled.error.message;
   return;
  }
-
  const localUnsynced=read().filter(r=>!r.synced);
  const merged=(pulled.data||[]).map(row=>({
   id:row.client_id,
@@ -131,29 +126,13 @@ async function syncNow(){
   createdAt:row.created_at,
   synced:true
  }));
-
  for(const r of localUnsynced){
   if(!merged.some(x=>x.id===r.id)) merged.push(r);
  }
-
  write(merged);
  $('#syncInfo').textContent='Synchronisation terminée : '+pending.length+' envoyé(s), '+merged.length+' présent(s) sur cet appareil.';
 }
- write(records);
- // Télécharger aussi les données du compte pour les rendre visibles sur cet appareil.
- const pulled=await c.from('farm_entries').select('client_id,module,payload,created_at').order('created_at',{ascending:true});
- if(pulled.error){$('#syncInfo').textContent='Envoi effectué, mais lecture cloud impossible : '+pulled.error.message;return}
- const latest=read();
- for(const row of (pulled.data||[])){
-   const idx=latest.findIndex(x=>x.id===row.client_id);
-   const cloudRecord={id:row.client_id,module:row.module,payload:row.payload,createdAt:row.created_at,synced:true};
-   if(idx>=0) latest[idx]={...latest[idx],...cloudRecord};
-   else latest.push(cloudRecord);
- }
- write(latest);
- $('#syncInfo').textContent=`Synchronisation terminée : ${pending.length} enregistrement(s) envoyé(s), ${(pulled.data||[]).length} récupéré(s) depuis le cloud.`;
-}
-function refreshStats(){
+ function refreshStats(){
  const a=read(),get=k=>a.filter(r=>r.module===k).map(r=>r.payload);
  const lots=get('lots'),sales=get('sales'),expenses=get('expenses'),deaths=get('deaths');
  const initial=lots.reduce((s,x)=>s+num(x.initial),0),sold=sales.reduce((s,x)=>s+num(x.qty),0),dead=deaths.reduce((s,x)=>s+num(x.qty),0);
