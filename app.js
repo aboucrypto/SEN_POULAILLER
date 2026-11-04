@@ -129,9 +129,6 @@ async function syncNow(){
  for(const r of localUnsynced){
   if(!merged.some(x=>x.id===r.id)) merged.push(r);
  }
- write(merged);
- $('#syncInfo').textContent='Synchronisation terminée : '+pending.length+' envoyé(s), '+merged.length+' présent(s) sur cet appareil.';
-}
  function refreshStats(){
  const a=read(),get=k=>a.filter(r=>r.module===k).map(r=>r.payload);
  const lots=get('lots'),sales=get('sales'),expenses=get('expenses'),deaths=get('deaths');
