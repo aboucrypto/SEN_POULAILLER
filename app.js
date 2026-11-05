@@ -31,9 +31,19 @@ function renderModule(key){
  $('#entryForm').addEventListener('submit',e=>{e.preventDefault();const payload={};m.fields.forEach(f=>payload[f[0]]=$('#'+f[0]).value);const records=read();records.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),module:key,payload,createdAt:new Date().toISOString(),synced:false});write(records);renderModule(key);$('#syncInfo').textContent='Enregistré sur cet appareil. En attente de synchronisation.';});
 }
 function renderTable(key,data){
- if(!data.length)return '<div class="empty">Aucune donnée enregistrée pour le moment.</div>';
+ if(!data.length) return '<div class="empty">Aucune donnée enregistrée pour le moment.</div>';
+
  return '<div class="table-wrap"><table><thead><tr><th>Informations</th><th>Actions</th></tr></thead><tbody>'+
- data.map(r=>'<tr><td>'+Object.entries(r).filter(([k])=>k!=='synced'&&k!=='id').map(([k,v])=>'<b>'+k+'</b> : '+v).join('<br>')+'</td><td><button onclick="editRecord(\''+key+'\',\''+r.id+'\')">Modifier</button> <button onclick="deleteRecord(\''+key+'\',\''+r.id+'\')">Supprimer</button></td></tr>').join('')+
+ data.map(r=>{
+  const id=String(r.id);
+  const infos=Object.entries(r.payload||{})
+   .map(([k,v])=>'<b>'+k+'</b> : '+v).join('<br>');
+
+  return '<tr><td>'+infos+'</td><td>'+
+   '<button onclick="window.editRecord(\''+key+'\',\''+id+'\')">Modifier</button> '+
+   '<button onclick="window.deleteRecord(\''+key+'\',\''+id+'\')">Supprimer</button>'+
+   '</td></tr>';
+ }).join('')+
  '</tbody></table></div>';
 }
 function editRecord(key,id){
