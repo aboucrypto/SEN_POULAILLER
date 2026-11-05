@@ -40,14 +40,13 @@ function editRecord(key,id){
  const data=read();
  const item=data.find(r=>r.id===id);
  if(!item)return;
- const fields=modules[key].fields;
- const values={...item};
- fields.forEach(([name,label])=>{
-  const current=values[name]??'';
-  const answer=prompt('Modifier '+label,current);
-  if(answer!==null)values[name]=answer;
- });
- const updated=data.map(r=>r.id===id?{...values,synced:false}:r);
+ const values={...item.payload};
+ for(const [name,label] of modules[key].fields){
+  const answer=prompt('Modifier '+label,values[name]??'');
+  if(answer===null)return;
+  values[name]=answer;
+ }
+ const updated=data.map(r=>r.id===id?{...r,payload:values,synced:false}:r);
  write(updated);
  renderModule(key);
 }
