@@ -48,7 +48,7 @@ function renderTable(key,data){
 }
 function editRecord(key,id){
  const data=read();
- const item=data.find(r=>r.id===id);
+ const item=data.find(r=>String(r.id)===String(id));
  if(!item)return;
  const values={...item.payload};
  for(const [name,label] of modules[key].fields){
