@@ -58,6 +58,7 @@ function deleteRecord(key,id){
  renderModule(key);
 }
 window.editRecord = editRecord;
+console.log("TEST MODIFICATION OK");
 window.deleteRecord = deleteRecord;
 function renderSettings(){
  const c=cfg();
