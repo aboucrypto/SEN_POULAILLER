@@ -51,8 +51,7 @@ function editRecord(key,id){
  const item=data.find(r=>String(r.id)===String(id));
  if(!item)return;
    alert("Lot trouvé : "+JSON.stringify(item));
-   const item=data.find(r=>String(r.id)===String(id));
- const values={...item.payload};
+   const values={...item.payload};
  for(const [name,label] of modules[key].fields){
   const answer=prompt('Modifier '+label,values[name]??'');
   if(answer===null)return;
