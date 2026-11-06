@@ -49,20 +49,29 @@ function renderTable(key,data){
 function editRecord(key,id){
  const data=read();
  const item=data.find(r=>String(r.id)===String(id));
+
  if(!item){
- alert("Lot introuvable. ID reçu : "+id);
- return;
-}
-   alert("Lot trouvé : "+JSON.stringify(item));
-   const values={...item.payload};
+  alert("Lot introuvable : "+id);
+  return;
+ }
+
+ const values={...(item.payload||{})};
+
  for(const [name,label] of modules[key].fields){
   const answer=prompt('Modifier '+label,values[name]??'');
   if(answer===null)return;
   values[name]=answer;
  }
- const updated=data.map(r=>r.id===id?{...r,payload:values,synced:false}:r);
+
+ const updated=data.map(r=>
+  String(r.id)===String(id)
+   ? {...r,payload:values,synced:false}
+   : r
+ );
+
  write(updated);
  renderModule(key);
+ alert("Modification enregistrée sur cet appareil.");
 }
 function deleteRecord(key,id){
  if(!confirm('Confirmer la suppression ?'))return;
