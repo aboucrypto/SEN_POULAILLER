@@ -49,7 +49,10 @@ function renderTable(key,data){
 function editRecord(key,id){
  const data=read();
  const item=data.find(r=>String(r.id)===String(id));
- if(!item)return;
+ if(!item){
+ alert("Lot introuvable. ID reçu : "+id);
+ return;
+}
    alert("Lot trouvé : "+JSON.stringify(item));
    const values={...item.payload};
  for(const [name,label] of modules[key].fields){
