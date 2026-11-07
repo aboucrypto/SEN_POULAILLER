@@ -48,6 +48,7 @@ function renderTable(key,data){
 }
 function editRecord(key,id){
  const data=read();
+
  const item=data.find(r=>String(r.id)===String(id));
 
  if(!item){
@@ -56,25 +57,36 @@ function editRecord(key,id){
  }
 
  const values={...(item.payload||{})};
-   alert("Le lot est retrouvé. Début de modification.");
-   const test=prompt("TEST : entre un nouveau numéro de lot");
-alert("Résultat : "+test);
 
  for(const [name,label] of modules[key].fields){
-  const answer=prompt('Modifier '+label,values[name]??'');
-  if(answer===null)return;
+
+  const answer=prompt(
+   'Modifier '+label,
+   values[name]??''
+  );
+
+  if(answer===null){
+   alert("Modification annulée.");
+   return;
+  }
+
   values[name]=answer;
  }
 
  const updated=data.map(r=>
   String(r.id)===String(id)
-   ? {...r,payload:values,synced:false}
+   ? {
+      ...r,
+      payload:values,
+      synced:false
+     }
    : r
  );
 
  write(updated);
  renderModule(key);
- alert("Modification enregistrée sur cet appareil.");
+
+ alert("Modification enregistrée avec succès !");
 }
 function deleteRecord(key,id){
  if(!confirm('Confirmer la suppression ?'))return;
