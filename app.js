@@ -40,7 +40,7 @@ function renderTable(key,data){
    .map(([k,v])=>'<b>'+k+'</b> : '+v).join('<br>');
 
   return '<tr><td>'+infos+'</td><td>'+
-   '<button onclick="window.editRecord(\''+key+'\',\''+id+'\')">Modifier</button> '+
+   '<button onclick="alert(\'TEST MODIFIER OK\')">Modifier</button> '+
    '<button onclick="window.deleteRecord(\''+key+'\',\''+id+'\')">Supprimer</button>'+
    '</td></tr>';
  }).join('')+
