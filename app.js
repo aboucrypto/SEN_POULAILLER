@@ -97,10 +97,7 @@ function deleteRecord(key,id){
  write(updated);
  renderModule(key);
 }
-window.editRecord = function(key,id){
-'<button onclick="window.editRecord(\''+key+'\',\''+id+'\')">Modifier</button> '+
- editRecord(key,id);
-};
+window.editRecord = editRecord;
 window.deleteRecord = deleteRecord;
 function renderSettings(){
  const c=cfg();
