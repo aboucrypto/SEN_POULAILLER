@@ -89,14 +89,24 @@ function editRecord(key,id){
 
  alert("Modification enregistrée avec succès !");
 }
-window.editRecord = editRecord;
 function deleteRecord(key,id){
- if(!confirm('Confirmer la suppression ?'))return;
+ if(!confirm('Confirmer la suppression ?')) return;
+
  const data=read();
- const updated=data.map(r=>r.id===id?{...r,deleted:true,synced:false}:r);
+
+ const updated=data.map(r=>
+  String(r.id)===String(id)
+   ? {...r,deleted:true,synced:false}
+   : r
+ );
+
  write(updated);
  renderModule(key);
+
+ alert("Suppression enregistrée sur cet appareil.");
 }
+
+window.deleteRecord = deleteRecord;
 window.editRecord = editRecord;
 window.deleteRecord = deleteRecord;
 function renderSettings(){
