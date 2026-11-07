@@ -56,6 +56,7 @@ function editRecord(key,id){
  }
 
  const values={...(item.payload||{})};
+   alert("Le lot est retrouvé. Début de modification.");
 
  for(const [name,label] of modules[key].fields){
   const answer=prompt('Modifier '+label,values[name]??'');
