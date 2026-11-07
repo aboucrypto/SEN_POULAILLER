@@ -107,6 +107,8 @@ function deleteRecord(key,id){
 }
 
 window.deleteRecord = deleteRecord;
+
+window.deleteRecord = deleteRecord;
 window.editRecord = editRecord;
 window.deleteRecord = deleteRecord;
 function renderSettings(){
