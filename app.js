@@ -31,6 +31,7 @@ function renderModule(key){
  $('#entryForm').addEventListener('submit',e=>{e.preventDefault();const payload={};m.fields.forEach(f=>payload[f[0]]=$('#'+f[0]).value);const records=read();records.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),module:key,payload,createdAt:new Date().toISOString(),synced:false});write(records);renderModule(key);$('#syncInfo').textContent='Enregistré sur cet appareil. En attente de synchronisation.';});
 }
 function renderTable(key,data){
+ alert("JavaScript fonctionne");
  if(!data.length) return '<div class="empty">Aucune donnée enregistrée pour le moment.</div>';
 
  return '<div class="table-wrap"><table><thead><tr><th>Informations</th><th>Actions</th></tr></thead><tbody>'+
