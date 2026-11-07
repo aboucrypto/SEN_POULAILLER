@@ -98,7 +98,7 @@ function deleteRecord(key,id){
  renderModule(key);
 }
 window.editRecord = function(key,id){
- alert("TEST : bouton Modifier fonctionne");
+'<button onclick="window.editRecord(\''+key+'\',\''+id+'\')">Modifier</button> '+
  editRecord(key,id);
 };
 window.deleteRecord = deleteRecord;
