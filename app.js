@@ -93,17 +93,6 @@ function deleteRecord(key,id){
 
  const data=read();
 
- const matches=data.filter(r=>
-  String(r.id)===String(id) && r.module===key
- );
-
- alert("Lots trouvés : "+matches.length);
-
- if(matches.length===0){
-  alert("Identifiant introuvable : "+id);
-  return;
- }
-
  const updated=data.map(r=>
   String(r.id)===String(id) && r.module===key
    ? {...r,deleted:true,synced:false}
@@ -111,10 +100,12 @@ function deleteRecord(key,id){
  );
 
  write(updated);
+ refreshStats();
  renderModule(key);
 
- alert("Suppression effectuée.");
+ alert('Suppression effectuée. Tableau de bord actualisé.');
 }
+
 window.deleteRecord=deleteRecord;
 function renderSettings(){
  const c=cfg();
