@@ -116,12 +116,6 @@ function deleteRecord(key,id){
  alert("Suppression effectuée.");
 }
 window.deleteRecord=deleteRecord;
-
-window.deleteRecord = deleteRecord;
-
-window.deleteRecord = deleteRecord;
-window.editRecord = editRecord;
-window.deleteRecord = deleteRecord;
 function renderSettings(){
  const c=cfg();
  $('#view').innerHTML=`<h2>Connexion Supabase</h2><p class="muted">Saisissez l’URL et la clé publique (anon/publishable) du nouveau projet SEN POULAILLER. Ne saisissez jamais la clé service_role ici.</p><form id="cfgForm"><div class="form-grid"><div class="field full"><label>URL du projet Supabase</label><input id="sbUrl" type="url" placeholder="https://xxxx.supabase.co" value="${esc(c.url||'')}"></div><div class="field full"><label>Clé publique (anon / publishable)</label><textarea id="sbKey" placeholder="Collez ici la clé publique">${esc(c.key||'')}</textarea></div><div class="field"><label>E-mail du compte</label><input id="sbEmail" type="email" autocomplete="username"></div><div class="field"><label>Mot de passe</label><input id="sbPass" type="password" autocomplete="current-password"></div></div><div class="actions"><button class="primary" type="submit">Enregistrer la configuration</button><button class="secondary" type="button" id="loginBtn">Se connecter</button><button class="secondary" type="button" id="signupBtn">Créer un compte</button><button class="secondary" type="button" id="logoutBtn">Déconnexion</button></div></form><div class="hint">La configuration est conservée sur cet appareil. Activez les politiques RLS du script SQL fourni avant d'utiliser le cloud.</div><p id="authInfo" class="muted"></p>`;
