@@ -191,13 +191,24 @@ async function syncNow(){
 $('#syncInfo').textContent='Synchronisation terminée : '+pending.length+' envoyé(s), '+merged.length+' présent(s) sur cet appareil.';
 }
  function refreshStats(){
- const a=read(),get=k=>a.filter(r=>r.module===k).map(r=>r.payload);
- const lots=get('lots'),sales=get('sales'),expenses=get('expenses'),deaths=get('deaths');
- const initial=lots.reduce((s,x)=>s+num(x.initial),0),sold=sales.reduce((s,x)=>s+num(x.qty),0),dead=deaths.reduce((s,x)=>s+num(x.qty),0);
- $('#statLots').textContent=lots.length;$('#statBirds').textContent=fmt(initial-sold-dead);
+ const a=read().filter(r=>!r.deleted && !(r.payload && r.payload._deleted));
+ const get=k=>a.filter(r=>r.module===k).map(r=>r.payload||{});
+
+ const lots=get('lots');
+ const sales=get('sales');
+ const expenses=get('expenses');
+ const deaths=get('deaths');
+
+ const initial=lots.reduce((s,x)=>s+num(x.initial),0);
+ const sold=sales.reduce((s,x)=>s+num(x.qty),0);
+ const dead=deaths.reduce((s,x)=>s+num(x.qty),0);
+
+ $('#statLots').textContent=lots.length;
+ $('#statBirds').textContent=fmt(initial-sold-dead);
  $('#statSales').textContent=fmt(sales.reduce((s,x)=>s+num(x.qty)*num(x.price),0));
  $('#statExpenses').textContent=fmt(expenses.reduce((s,x)=>s+num(x.amount),0));
- $('#statDeaths').textContent=fmt(dead);$('#statPending').textContent=a.filter(r=>!r.synced).length;
+ $('#statDeaths').textContent=fmt(dead);
+ $('#statPending').textContent=a.filter(r=>!r.synced).length;
 }
 function renderReports(){
  const a=read(),sales=a.filter(r=>r.module==='sales'),expenses=a.filter(r=>r.module==='expenses'),lots=a.filter(r=>r.module==='lots'),deaths=a.filter(r=>r.module==='deaths'),vacc=a.filter(r=>r.module==='vaccines');
