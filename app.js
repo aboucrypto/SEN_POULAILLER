@@ -26,7 +26,7 @@ function addField(f){
  return `<div class="field"><label for="${key}">${label}</label><input id="${key}" type="${type}" ${required?'required':''} ${type==='date'?'value="'+today()+'"':''} ${type==='number'?'min="0" step="any"':''}></div>`;
 }
 function renderModule(key){
- current=key; const m=modules[key]; const data=read().filter(x=>x.module===key && !x.deleted).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));.localeCompare(a.createdAt||''));
+ current=key; const m=modules[key]; const data=read().filter(x=>x.module===key && !x.deleted).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
  $('#view').innerHTML=`<h2>${m.title}</h2><form id="entryForm"><div class="form-grid">${m.fields.map(addField).join('')}</div><div class="actions"><button class="primary" type="submit">Enregistrer</button><button class="secondary" type="reset">Effacer le formulaire</button></div></form><h3>Historique (${data.length})</h3>${renderTable(key,data)}`;
  $('#entryForm').addEventListener('submit',e=>{e.preventDefault();const payload={};m.fields.forEach(f=>payload[f[0]]=$('#'+f[0]).value);const records=read();records.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),module:key,payload,createdAt:new Date().toISOString(),synced:false});write(records);renderModule(key);$('#syncInfo').textContent='Enregistré sur cet appareil. En attente de synchronisation.';});
 }
