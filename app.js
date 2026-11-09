@@ -126,19 +126,22 @@ async function auth(method){
 }
 async function syncNow(){
  if(!navigator.onLine){
-  $('#syncInfo').textContent='Pas d’Internet : les données restent sur le téléphone.';
+  $('#syncInfo').textContent='Pas d’Internet.';
   return;
  }
+
  const c=initClient();
  if(!c){
-  $('#syncInfo').textContent='Configurez d’abord Supabase.';
+  $('#syncInfo').textContent='Configurez Supabase.';
   return;
  }
+
  const session=await c.auth.getSession();
  if(!session.data.session){
   $('#syncInfo').textContent='Connectez-vous à Supabase.';
   return;
  }
+
  const user=session.data.session.user;
  let records=read();
  const pending=records.filter(r=>!r.synced);
@@ -150,36 +153,50 @@ async function syncNow(){
    client_id:r.id,
    user_id:user.id,
    module:r.module,
-   payload:r.payload,
+   payload:{
+    ...(r.payload||{}),
+    _deleted:!!r.deleted
+   },
    created_at:r.createdAt
   };
-  const result=await c.from('farm_entries').upsert(row,{onConflict:'client_id'});
+
+  const result=await c.from('farm_entries')
+   .upsert(row,{onConflict:'client_id'});
+
   if(result.error){
    $('#syncInfo').textContent='Erreur : '+result.error.message;
    return;
   }
+
   r.synced=true;
  }
+
+ write(records);
+
  const pulled=await c.from('farm_entries')
   .select('client_id,module,payload,created_at')
   .order('created_at',{ascending:true});
+
  if(pulled.error){
-  $('#syncInfo').textContent='Lecture cloud impossible : '+pulled.error.message;
+  $('#syncInfo').textContent='Erreur cloud : '+pulled.error.message;
   return;
  }
- const localUnsynced=read().filter(r=>!r.synced);
+
  const merged=(pulled.data||[]).map(row=>({
   id:row.client_id,
   module:row.module,
   payload:row.payload,
   createdAt:row.created_at,
+  deleted:!!(row.payload && row.payload._deleted),
   synced:true
  }));
- for(const r of localUnsynced){
-  if(!merged.some(x=>x.id===r.id)) merged.push(r);
- }
-   write(merged);
-$('#syncInfo').textContent='Synchronisation terminée : '+pending.length+' envoyé(s), '+merged.length+' présent(s) sur cet appareil.';
+
+ write(merged);
+
+ $('#syncInfo').textContent=
+  'Synchronisation terminée : '+pending.length+
+  ' envoyé(s), '+merged.length+' présent(s).';
+
 }
  function refreshStats(){
  const a=read().filter(r=>!r.deleted && !(r.payload && r.payload._deleted));
