@@ -58,8 +58,8 @@ function renderTable(key,data){
    .map(([k,v])=>'<b>'+esc(k)+'</b> : '+esc(v)).join('<br>');
 
   const whatsapp = key==='directory' && r.payload.phone
-   ? '<a href="'+whatsappUrl(r.payload.phone)+'" target="_blank" rel="noopener">WhatsApp</a> '
-   : '';
+ ? '<a href="https://wa.me/'+String(r.payload.phone).replace(/\D/g,'').replace(/^0/,'221')+'" target="_blank" rel="noopener" style="display:inline-block;background:#168b45;color:white;padding:9px 14px;border-radius:8px;text-decoration:none;font-weight:bold;margin:4px">WhatsApp</a> '
+ : '';
 
   return '<tr><td>'+infos+'</td><td>'+
    whatsapp+
