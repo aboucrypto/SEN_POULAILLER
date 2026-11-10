@@ -104,7 +104,7 @@ function editRecord(key,id){
  renderModule(key);
 
  alert("Modification enregistrée avec succès !");
-}
+}window.editRecord = editRecord;
 function deleteRecord(key,id){
  if(!confirm('Confirmer la suppression ?')) return;
 
