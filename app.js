@@ -54,9 +54,15 @@ function renderTable(key,data){
  data.map(r=>{
   const id=String(r.id);
   const infos=Object.entries(r.payload||{})
-   .map(([k,v])=>'<b>'+k+'</b> : '+v).join('<br>');
+   .filter(([k])=>k!=='_deleted')
+   .map(([k,v])=>'<b>'+esc(k)+'</b> : '+esc(v)).join('<br>');
+
+  const whatsapp = key==='directory' && r.payload.phone
+   ? '<a href="'+whatsappUrl(r.payload.phone)+'" target="_blank" rel="noopener">WhatsApp</a> '
+   : '';
 
   return '<tr><td>'+infos+'</td><td>'+
+   whatsapp+
    '<button onclick="window.editRecord(\''+key+'\',\''+id+'\')">Modifier</button> '+
    '<button onclick="window.deleteRecord(\''+key+'\',\''+id+'\')">Supprimer</button>'+
    '</td></tr>';
