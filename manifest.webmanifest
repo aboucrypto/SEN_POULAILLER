@@ -9,6 +9,8 @@
   "description": "Gestion de poulailler hors connexion avec synchronisation Supabase.",
   "icons": [
   {
+    icons": [
+  {
     "src": "assets/logo.jpg",
     "sizes": "any",
     "type": "image/jpeg",
