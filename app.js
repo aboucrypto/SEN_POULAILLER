@@ -11,25 +11,20 @@ const modules={
  deaths:{title:'Enregistrer une mortalité',fields:[['date','Date','date',true],['lot','Code lot','text',true],['qty','Nombre mort','number',true],['cause','Cause / observation','text']]},
  vaccines:{title:'Suivi des vaccinations',fields:[['date','Date vaccination','date',true],['lot','Code lot','text',true],['age','Âge (jours)','number'],['vaccine','Vaccin / médicament','text',true],['target','Maladie ciblée','text'],['dose','Dose','text'],['route','Voie','select',false,['Eau de boisson','Oculaire','Nasale','Injection','Autre']],['treated','Effectif traité','number'],['nextDate','Prochaine date','date']]},
  stock:{title:'Gestion du stock',fields:[['date','Date','date',true],['product','Produit / article','text',true],['kind','Mouvement','select',false,['Entrée','Sortie']],['qty','Quantité','number',true],['unit','Unité','text'],['threshold','Seuil alerte','number']]},
- customers:{title:'Fichier clients',fields:[['name','Nom client','text',true],['phone','Téléphone','tel'],['address','Adresse / quartier','text'],['kind','Type client','text']]}
-};,directory:{
- title:'Annuaire des restaurants et traiteurs',
- fields:[
-  ['name','Nom du restaurant ou de la personne','text',true],
-  ['phone','Téléphone / WhatsApp','tel',true],
-  ['address','Adresse / quartier','text'],
-  ['specialty','Spécialités culinaires','text'],
-  ['service','Type de service','select',true,[
-   'Traiteur pour cérémonies',
-   'Livraison à domicile',
-   'Cuisine à domicile',
-   'Restaurant',
-   'Autre'
-  ]],
-  ['price','Tarifs indicatifs (FCFA)','text'],
-  ['notes','Observations','text']
- ]
-}
+ customers:{title:'Fichier clients',fields:[['name','Nom client','text',true],['phone','Téléphone','tel'],['address','Adresse / quartier','text'],['kind','Type client','text']]},
+ directory:{
+  title:'Annuaire des restaurants et traiteurs',
+  fields:[
+   ['name','Nom du restaurant ou de la personne','text',true],
+   ['phone','Téléphone / WhatsApp','tel',true],
+   ['address','Adresse / quartier','text'],
+   ['specialty','Spécialités culinaires','text'],
+   ['service','Type de service','select',true,['Traiteur pour cérémonies','Livraison à domicile','Cuisine à domicile','Restaurant','Autre']],
+   ['price','Tarifs indicatifs (FCFA)','text'],
+   ['notes','Observations','text']
+  ]
+ }
+};
 let current='lots';
 function read(){try{return JSON.parse(localStorage.getItem(DBKEY)||'[]')}catch{return []}}
 function write(a){localStorage.setItem(DBKEY,JSON.stringify(a));refreshStats()}
