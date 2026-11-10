@@ -12,7 +12,7 @@ const modules={
  vaccines:{title:'Suivi des vaccinations',fields:[['date','Date vaccination','date',true],['lot','Code lot','text',true],['age','Âge (jours)','number'],['vaccine','Vaccin / médicament','text',true],['target','Maladie ciblée','text'],['dose','Dose','text'],['route','Voie','select',false,['Eau de boisson','Oculaire','Nasale','Injection','Autre']],['treated','Effectif traité','number'],['nextDate','Prochaine date','date']]},
  stock:{title:'Gestion du stock',fields:[['date','Date','date',true],['product','Produit / article','text',true],['kind','Mouvement','select',false,['Entrée','Sortie']],['qty','Quantité','number',true],['unit','Unité','text'],['threshold','Seuil alerte','number']]},
  customers:{title:'Fichier clients',fields:[['name','Nom client','text',true],['phone','Téléphone','tel'],['address','Adresse / quartier','text'],['kind','Type client','text']]}
-};directory:{
+};,directory:{
  title:'Annuaire des restaurants et traiteurs',
  fields:[
   ['name','Nom du restaurant ou de la personne','text',true],
