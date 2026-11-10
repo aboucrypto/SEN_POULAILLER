@@ -42,6 +42,11 @@ function renderModule(key){
  $('#view').innerHTML=`<h2>${m.title}</h2><form id="entryForm"><div class="form-grid">${m.fields.map(addField).join('')}</div><div class="actions"><button class="primary" type="submit">Enregistrer</button><button class="secondary" type="reset">Effacer le formulaire</button></div></form><h3>Historique (${data.length})</h3>${renderTable(key,data)}`;
  $('#entryForm').addEventListener('submit',e=>{e.preventDefault();const payload={};m.fields.forEach(f=>payload[f[0]]=$('#'+f[0]).value);const records=read();records.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),module:key,payload,createdAt:new Date().toISOString(),synced:false});write(records);renderModule(key);$('#syncInfo').textContent='Enregistré sur cet appareil. En attente de synchronisation.';});
 }
+function whatsappUrl(phone){
+ let n=String(phone||'').replace(/\D/g,'');
+ if(n.length===9) n='221'+n;
+ return 'https://wa.me/'+n;
+}
 function renderTable(key,data){
  if(!data.length) return '<div class="empty">Aucune donnée enregistrée pour le moment.</div>';
 
