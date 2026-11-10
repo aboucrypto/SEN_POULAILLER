@@ -149,16 +149,18 @@ async function syncNow(){
  }
 
  const session=await c.auth.getSession();
- if(!session.data.session){
+ if(session.error || !session.data.session){
   $('#syncInfo').textContent='Connectez-vous à Supabase.';
   return;
  }
 
  const user=session.data.session.user;
  let records=read();
- const pending=records.filter(r=>!r.synced);
 
  $('#syncInfo').textContent='Synchronisation en cours…';
+
+ // Envoyer les nouvelles saisies et modifications
+ const pending=records.filter(r=>!r.synced);
 
  for(const r of pending){
   const row={
@@ -183,32 +185,46 @@ async function syncNow(){
   r.synced=true;
  }
 
+ // Conserver les données locales avant de récupérer le cloud
  write(records);
 
+ // Récupérer les données du compte connecté
  const pulled=await c.from('farm_entries')
   .select('client_id,module,payload,created_at')
-  .order('created_at',{ascending:true});
+  .eq('user_id',user.id);
 
  if(pulled.error){
   $('#syncInfo').textContent='Erreur cloud : '+pulled.error.message;
   return;
  }
 
- const merged=(pulled.data||[]).map(row=>({
-  id:row.client_id,
-  module:row.module,
-  payload:row.payload,
-  createdAt:row.created_at,
-  deleted:!!(row.payload && row.payload._deleted),
-  synced:true
- }));
+ // Fusionner les données locales et celles du cloud
+ const mergedMap=new Map();
+
+ records.forEach(r=>{
+  mergedMap.set(String(r.id),r);
+ });
+
+ (pulled.data||[]).forEach(row=>{
+  mergedMap.set(String(row.client_id),{
+   id:row.client_id,
+   module:row.module,
+   payload:row.payload||{},
+   createdAt:row.created_at,
+   deleted:!!(row.payload && row.payload._deleted),
+   synced:true
+  });
+ });
+
+ // Ne jamais remplacer les données locales par une liste vide
+ const merged=Array.from(mergedMap.values());
 
  write(merged);
 
  $('#syncInfo').textContent=
-  'Synchronisation terminée : '+pending.length+
-  ' envoyé(s), '+merged.length+' présent(s).';
-
+  'Synchronisation terminée : '+
+  pending.length+' envoyé(s), '+
+  (pulled.data||[]).length+' récupéré(s).';
 }
  function refreshStats(){
  const a=read().filter(r=>!r.deleted && !(r.payload && r.payload._deleted));
