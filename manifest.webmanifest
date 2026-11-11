@@ -1,16 +1,12 @@
 {
-  "name": "SADIKH SERVICES – Gestion Poulailler",
-  "short_name": "SADIKH Poulailler",
-  "start_url": "./",
-  "scope": "./",
+  "background_color": "#ffffff",
+  "description": "Gestion du poulailler SADIKH SERVICES, utilisable hors connexion.",
+  "dir": "ltr",
   "display": "standalone",
-  "background_color": "#f3f6f3",
-  "theme_color": "#173f2a",
-  "description": "Gestion de poulailler hors connexion avec synchronisation Supabase.",
-  "icons": [
-    {
-      "src": "assets/logo.jpg",
-      "sizes": "any",
-      "type": "image/jpeg",
-      "purpose": "any"
-      }
+  "name": "SADIKH SERVICES-Gestion Poulailler",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "SADIKH Poulailler",
+  "start_url": "/",
+  "theme_color": "#173f2a"
+}
