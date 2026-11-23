@@ -124,7 +124,7 @@ async function searchNearby(){
   info.textContent='Position obtenue. Recherche des services dans un rayon de 5 km…';
   const query=categoryQuery(category).replaceAll('{LAT}',String(lat)).replaceAll('{LON}',String(lon));
   try{
-   const response=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:query});
+   const response=await fetch('https://ovp.dresel.systems/api-af/interpreter',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:query});
    if(!response.ok) throw new Error('Le service de carte ne répond pas ('+response.status+').');
    const json=await response.json();
    const found=(json.elements||[]).map(el=>{
