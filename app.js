@@ -152,7 +152,37 @@ function renderSettings(){
  $('#logoutBtn').onclick=async()=>{if(client)await client.auth.signOut();$('#authInfo').textContent='Déconnecté.'};
 }
 let client=null;
-function initClient(){const c=cfg();client=null;if(c.url&&c.key&&window.supabase?.createClient){client=window.supabase.createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});}return client}
+function initClient(){
+ const c=cfg();
+ client=null;
+ if(c.url&&c.key&&window.supabase?.createClient){
+  client=window.supabase.createClient(c.url,c.key,{
+   auth:{
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true
+   }
+  });
+ }
+ return client;
+}
+
+async function ensureAnonymousSession(){
+ const c=initClient();
+ if(!c) throw new Error('Configurez Supabase.');
+
+ const current=await c.auth.getSession();
+ if(current.error) throw current.error;
+
+ if(current.data.session){
+  return current.data.session;
+ }
+
+ const result=await c.auth.signInAnonymously();
+ if(result.error) throw result.error;
+
+ return result.data.session;
+}
 async function auth(method){
  const c=initClient();if(!c){$('#authInfo').textContent='Enregistrez d’abord l’URL et la clé Supabase.';return}
  const email=$('#sbEmail').value.trim(),password=$('#sbPass').value;
