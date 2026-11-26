@@ -378,28 +378,51 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.ser
 window.enablePushNotifications = async function(){
  const info=$('#pushInfo');
 
- try{
+ try {
+  info.textContent='Vérification du navigateur…';
+
   if(!('serviceWorker' in navigator) ||
      !('PushManager' in window) ||
      !('Notification' in window)){
-   throw new Error('Ce navigateur ne prend pas en charge les notifications Push.');
+   throw new Error('Navigateur incompatible avec les notifications.');
   }
 
   if(!navigator.onLine){
-   throw new Error('Connectez le téléphone à Internet.');
+   throw new Error('Connectez-vous à Internet.');
   }
 
-  info.textContent='Activation en cours…';
+  info.textContent='Demande d’autorisation…';
 
   const permission=await Notification.requestPermission();
 
   if(permission!=='granted'){
-   throw new Error('Vous devez autoriser les notifications.');
+   throw new Error('Autorisation des notifications refusée.');
   }
+
+  info.textContent='Installation du service worker…';
+
+  const registration=await navigator.serviceWorker.register('./sw.js');
+
+  info.textContent='Attente du service worker…';
+
+  const ready=await Promise.race([
+   navigator.serviceWorker.ready,
+   new Promise((_,reject)=>
+    setTimeout(()=>reject(
+     new Error('Service Worker bloqué. Vérifiez sw.js.')
+    ),15000)
+   )
+  ]);
+
+  if(!ready.active){
+   throw new Error('Service Worker non actif.');
+  }
+
+  info.textContent='Connexion à Supabase…';
 
   const c=initClient();
 
-  if(!c) throw new Error('Configurez d’abord Supabase.');
+  if(!c) throw new Error('Configuration Supabase absente.');
 
   let session=await c.auth.getSession();
 
@@ -409,22 +432,27 @@ window.enablePushNotifications = async function(){
    session={data:{session:login.data.session}};
   }
 
-  const registration=await navigator.serviceWorker.ready;
+  info.textContent='Enregistrement du téléphone…';
 
   const publicKey='BIpy051c8djqcjlLt0zipTC-03q5mKyVk8Q-SDo7XGfGVg31KhmiVspoQOidODjPIMNKZqBuMdo4m-Qq0yx7elk';
 
   const padding='='.repeat((4-publicKey.length%4)%4);
   const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
-  const applicationServerKey=Uint8Array.from(raw,c=>c.charCodeAt(0));
 
-  let subscription=await registration.pushManager.getSubscription();
+  const applicationServerKey=Uint8Array.from(
+   raw,c=>c.charCodeAt(0)
+  );
+
+  let subscription=await ready.pushManager.getSubscription();
 
   if(!subscription){
-   subscription=await registration.pushManager.subscribe({
+   subscription=await ready.pushManager.subscribe({
     userVisibleOnly:true,
     applicationServerKey
    });
   }
+
+  info.textContent='Envoi à Supabase…';
 
   const response=await fetch(
    c.supabaseUrl+'/functions/v1/bulletin-poulailler',
@@ -444,14 +472,14 @@ window.enablePushNotifications = async function(){
   const result=await response.json();
 
   if(!response.ok || !result.success){
-   throw new Error(result.error||'Enregistrement impossible.');
+   throw new Error(result.error||'Erreur Supabase.');
   }
 
-  info.textContent='Téléphone enregistré ! Notifications autorisées.';
+  info.textContent='Succès ! Téléphone enregistré.';
 
- }catch(error){
+ } catch(error) {
+  console.error('Erreur notifications:',error);
   info.textContent='Erreur : '+error.message;
  }
 };
-initClient();refreshStats();renderModule('lots');
 $('#netBadge').textContent=navigator.onLine?'Internet disponible':'Hors ligne';
