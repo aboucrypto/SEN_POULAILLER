@@ -191,38 +191,84 @@ async function auth(method){
  $('#authInfo').textContent=res.error?res.error.message:(method==='signUp'?'Compte créé. Vérifiez votre e-mail si la confirmation est demandée.':'Connexion réussie.');
 }
 async function syncNow(){
- if(!navigator.onLine){$('#syncInfo').textContent='Pas d’Internet.';return}
- const c=initClient();if(!c){$('#syncInfo').textContent='Configurez Supabase.';return}
- let session=await c.auth.getSession();
+ try {
+  if(!navigator.onLine){
+   $('#syncInfo').textContent='Pas d’Internet.';
+   return;
+  }
 
-if(session.error){
- $('#syncInfo').textContent=session.error.message;
- return;
-}
+  const c=initClient();
+  if(!c){
+   $('#syncInfo').textContent='Configurez Supabase.';
+   return;
+  }
 
-if(!session.data.session){
- const login=await c.auth.signInAnonymously();
+  let session=await c.auth.getSession();
 
- if(login.error){
-  $('#syncInfo').textContent='Connexion anonyme impossible : '+login.error.message;
-  return;
+  if(session.error) throw session.error;
+
+  if(!session.data.session){
+   const login=await c.auth.signInAnonymously();
+   if(login.error) throw login.error;
+   session={data:{session:login.data.session}};
+  }
+
+  const user=session.data.session.user;
+  const records=read();
+
+  $('#syncInfo').textContent='Synchronisation en cours…';
+
+  const pending=records.filter(r=>!r.synced);
+
+  for(const r of pending){
+   const row={
+    client_id:r.id,
+    user_id:user.id,
+    module:r.module,
+    payload:{...(r.payload||{}),_deleted:!!r.deleted},
+    created_at:r.createdAt
+   };
+
+   const result=await c.from('farm_entries')
+    .upsert(row,{onConflict:'client_id'});
+
+   if(result.error) throw result.error;
+   r.synced=true;
+  }
+
+  write(records);
+
+  const pulled=await c.from('farm_entries')
+   .select('client_id,module,payload,created_at')
+   .eq('user_id',user.id);
+
+  if(pulled.error) throw pulled.error;
+
+  const mergedMap=new Map();
+
+  records.forEach(r=>mergedMap.set(String(r.id),r));
+
+  (pulled.data||[]).forEach(row=>{
+   mergedMap.set(String(row.client_id),{
+    id:row.client_id,
+    module:row.module,
+    payload:row.payload||{},
+    createdAt:row.created_at,
+    deleted:!!(row.payload&&row.payload._deleted),
+    synced:true
+   });
+  });
+
+  const merged=Array.from(mergedMap.values());
+  write(merged);
+
+  $('#syncInfo').textContent=
+   'Synchronisation terminée : '+pending.length+
+   ' envoyé(s), '+(pulled.data||[]).length+' récupéré(s).';
+
+ } catch(error) {
+  $('#syncInfo').textContent='Erreur de synchronisation : '+error.message;
  }
-
- $('#syncInfo').textContent='Synchronisation en cours…';
- const pending=records.filter(r=>!r.synced);
- for(const r of pending){
-  const row={client_id:r.id,user_id:user.id,module:r.module,payload:{...(r.payload||{}),_deleted:!!r.deleted},created_at:r.createdAt};
-  const result=await c.from('farm_entries').upsert(row,{onConflict:'client_id'});
-  if(result.error){$('#syncInfo').textContent='Erreur : '+result.error.message;return}
-  r.synced=true;
- }
- write(records);
- const pulled=await c.from('farm_entries').select('client_id,module,payload,created_at').eq('user_id',user.id);
- if(pulled.error){$('#syncInfo').textContent='Erreur cloud : '+pulled.error.message;return}
- const mergedMap=new Map();records.forEach(r=>mergedMap.set(String(r.id),r));
- (pulled.data||[]).forEach(row=>mergedMap.set(String(row.client_id),{id:row.client_id,module:row.module,payload:row.payload||{},createdAt:row.created_at,deleted:!!(row.payload&&row.payload._deleted),synced:true}));
- const merged=Array.from(mergedMap.values());write(merged);
- $('#syncInfo').textContent='Synchronisation terminée : '+pending.length+' envoyé(s), '+(pulled.data||[]).length+' récupéré(s).';
 }
 function visibleRecords(a=read()){return a.filter(r=>!r.deleted&&!(r.payload&&r.payload._deleted))}
 function refreshStats(){
