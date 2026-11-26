@@ -193,9 +193,21 @@ async function auth(method){
 async function syncNow(){
  if(!navigator.onLine){$('#syncInfo').textContent='Pas d’Internet.';return}
  const c=initClient();if(!c){$('#syncInfo').textContent='Configurez Supabase.';return}
- const session=await c.auth.getSession();
- if(session.error||!session.data.session){$('#syncInfo').textContent='Connectez-vous à Supabase.';return}
- const user=session.data.session.user;let records=read();
+ let session=await c.auth.getSession();
+
+if(session.error){
+ $('#syncInfo').textContent=session.error.message;
+ return;
+}
+
+if(!session.data.session){
+ const login=await c.auth.signInAnonymously();
+
+ if(login.error){
+  $('#syncInfo').textContent='Connexion anonyme impossible : '+login.error.message;
+  return;
+ }
+
  $('#syncInfo').textContent='Synchronisation en cours…';
  const pending=records.filter(r=>!r.synced);
  for(const r of pending){
