@@ -375,5 +375,83 @@ $('#syncBtn').addEventListener('click',syncNow);
 window.addEventListener('online',()=>{$('#netBadge').textContent='Internet disponible';syncNow()});
 window.addEventListener('offline',()=>$('#netBadge').textContent='Hors ligne');
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+window.enablePushNotifications = async function(){
+ const info=$('#pushInfo');
+
+ try{
+  if(!('serviceWorker' in navigator) ||
+     !('PushManager' in window) ||
+     !('Notification' in window)){
+   throw new Error('Ce navigateur ne prend pas en charge les notifications Push.');
+  }
+
+  if(!navigator.onLine){
+   throw new Error('Connectez le téléphone à Internet.');
+  }
+
+  info.textContent='Activation en cours…';
+
+  const permission=await Notification.requestPermission();
+
+  if(permission!=='granted'){
+   throw new Error('Vous devez autoriser les notifications.');
+  }
+
+  const c=initClient();
+
+  if(!c) throw new Error('Configurez d’abord Supabase.');
+
+  let session=await c.auth.getSession();
+
+  if(!session.data.session){
+   const login=await c.auth.signInAnonymously();
+   if(login.error) throw login.error;
+   session={data:{session:login.data.session}};
+  }
+
+  const registration=await navigator.serviceWorker.ready;
+
+  const publicKey='BIpy051c8djqcjlLt0zipTC-03q5mKyVk8Q-SDo7XGfGVg31KhmiVspoQOidODjPIMNKZqBuMdo4m-Qq0yx7elk';
+
+  const padding='='.repeat((4-publicKey.length%4)%4);
+  const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
+  const applicationServerKey=Uint8Array.from(raw,c=>c.charCodeAt(0));
+
+  let subscription=await registration.pushManager.getSubscription();
+
+  if(!subscription){
+   subscription=await registration.pushManager.subscribe({
+    userVisibleOnly:true,
+    applicationServerKey
+   });
+  }
+
+  const response=await fetch(
+   c.supabaseUrl+'/functions/v1/bulletin-poulailler',
+   {
+    method:'POST',
+    headers:{
+     'Content-Type':'application/json',
+     'apikey':cfg().key,
+     'Authorization':'Bearer '+session.data.session.access_token
+    },
+    body:JSON.stringify({
+     subscription:subscription.toJSON()
+    })
+   }
+  );
+
+  const result=await response.json();
+
+  if(!response.ok || !result.success){
+   throw new Error(result.error||'Enregistrement impossible.');
+  }
+
+  info.textContent='Téléphone enregistré ! Notifications autorisées.';
+
+ }catch(error){
+  info.textContent='Erreur : '+error.message;
+ }
+};
 initClient();refreshStats();renderModule('lots');
 $('#netBadge').textContent=navigator.onLine?'Internet disponible':'Hors ligne';
