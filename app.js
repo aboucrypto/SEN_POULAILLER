@@ -434,7 +434,7 @@ window.enablePushNotifications = async function(){
 
   info.textContent='Enregistrement du téléphone…';
 
-  const publicKey=BAit1stQ7qGz6WF59JSpoCB7eBN8nHfFwyZ0OX-YSxkobTb9bXun5lBivkgyY1Hc5SDsqJxqS4Y1II6oZ9uxfjg
+  const publicKey=d6ba3733a136f395b1e6dbcf4ef25e491b84a0179d7a98ca9c4f15d68c19af4a
 
   const padding='='.repeat((4-publicKey.length%4)%4);
   const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
