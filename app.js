@@ -434,15 +434,14 @@ window.enablePushNotifications = async function(){
 
   info.textContent='Enregistrement du téléphone…';
 
-  const publicKey=BDlLTE3RCPfgfKy7ucDHRkBGjy2QPUny34QcBbpe10ZINfbmA1X0o2XyXc5B3mIYSONvkTeRdYbpXIJr8ZAjdtk;
+  const publicKey='BDlLTE3RCPfgfKy7ucDHRkBGjy2QPUny34QcBbpe10ZINfbmA1X0o2XyXc5B3mIYSONvkTeRdYbpXIJr8ZAjdtk';
 
-  const padding='='.repeat((4-publicKey.length%4)%4);
-  const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
+ onst padding='='.repeat((4-publicKey.length%4)%4);
+const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
 
-  const applicationServerKey=Uint8Array.from(
-   raw,c=>c.charCodeAt(0)
-  );
-
+const applicationServerKey=Uint8Array.from(
+ raw,c=>c.charCodeAt(0)
+);
   let subscription=await ready.pushManager.getSubscription();
 
   if(!subscription){
