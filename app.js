@@ -434,7 +434,7 @@ window.enablePushNotifications = async function(){
 
   info.textContent='Enregistrement du téléphone…';
 
-  const publicKey='BIpy051c8djqcjlLt0zipTC-03q5mKyVk8Q-SDo7XGfGVg31KhmiVspoQOidODjPIMNKZqBuMdo4m-Qq0yx7elk';
+  const publicKey=BAit1stQ7qGz6WF59JSpoCB7eBN8nHfFwyZ0OX-SxkobTb9bXun5lBivkgyY1Hc5SDsqJxqS4Y1II6oZ9uxfjg';
 
   const padding='='.repeat((4-publicKey.length%4)%4);
   const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
