@@ -474,3 +474,6 @@ window.enablePushNotifications = async function() {
   }
 };
 $('#netBadge').textContent=navigator.onLine?'Internet disponible':'Hors ligne';
+
+// Actualiser le tableau de bord au démarrage
+refreshStats();
