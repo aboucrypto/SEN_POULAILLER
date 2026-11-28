@@ -2,6 +2,7 @@
    Les saisies sont d'abord stockées localement. Synchronisation cloud après connexion.
 */
 const DBKEY='sadikh_records_v1', CFGKEY='sadikh_supabase_cfg_v1';
+const VAPID_PUBLIC_KEY = 'BAit1stQ7qGz6WF59JSpoCB7eBN8nHfFwyZ0OX-SxkobTb9bXun5lBivkgyY1Hc5SDsqJxqS4Y1II6oZ9uxfjg';
 const $=s=>document.querySelector(s);
 const today=()=>new Date().toISOString().slice(0,10);
 const modules={
