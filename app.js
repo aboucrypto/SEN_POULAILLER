@@ -372,114 +372,105 @@ document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',
  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));
  if(b.dataset.view==='settings')renderSettings();else if(b.dataset.view==='reports')renderReports();else if(b.dataset.view==='gps')renderGps();else renderModule(b.dataset.view);
 }));
-$('#syncBtn').addEventListener('click',syncNow);
-window.addEventListener('online',()=>{$('#netBadge').textContent='Internet disponible';syncNow()});
-window.addEventListener('offline',()=>$('#netBadge').textContent='Hors ligne');
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-window.enablePushNotifications = async function(){
- const info=$('#pushInfo');
+// SADIKH SERVICES - ACTIVATION NOTIFICATIONS PUSH
 
- try {
-  info.textContent='Vérification du navigateur…';
+function vapidKeyToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
 
-  if(!('serviceWorker' in navigator) ||
-     !('PushManager' in window) ||
-     !('Notification' in window)){
-   throw new Error('Navigateur incompatible avec les notifications.');
+  const raw = atob(base64);
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+window.enablePushNotifications = async function() {
+  const info = document.querySelector('#pushInfo');
+
+  try {
+    if (!('serviceWorker' in navigator) ||
+        !('PushManager' in window) ||
+        !('Notification' in window)) {
+      throw new Error('Notifications Push non supportées par ce navigateur.');
+    }
+
+    if (!navigator.onLine) {
+      throw new Error('Connexion Internet nécessaire.');
+    }
+
+    if (!VAPID_PUBLIC_KEY) {
+      throw new Error('Clé VAPID publique manquante.');
+    }
+
+    info.textContent = 'Vérification du compte...';
+
+    const c = initClient();
+    if (!c) throw new Error('Configurez Supabase.');
+
+    let result = await c.auth.getSession();
+    if (result.error) throw result.error;
+
+    if (!result.data.session) {
+      const login = await c.auth.signInAnonymously();
+      if (login.error) throw login.error;
+    }
+
+    info.textContent = 'Demande de permission...';
+
+    let permission = Notification.permission;
+
+    if (permission !== 'granted') {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission !== 'granted') {
+      throw new Error('Autorisation des notifications refusée.');
+    }
+
+    info.textContent = 'Préparation du téléphone...';
+
+    const registration = await navigator.serviceWorker.ready;
+
+    let subscription =
+      await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey:
+          vapidKeyToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    info.textContent = 'Enregistrement dans Supabase...';
+
+    const saved = await c.functions.invoke(
+      'bulletin-poulailler',
+      {
+        body: {
+          subscription: subscription.toJSON()
+        }
+      }
+    );
+
+    if (saved.error) {
+      throw new Error(
+        saved.data?.error || saved.error.message
+      );
+    }
+
+    if (!saved.data?.success) {
+      throw new Error(
+        saved.data?.error || 'Enregistrement non confirmé.'
+      );
+    }
+
+    info.textContent =
+      'Notifications activées ! Téléphone enregistré.';
+
+  } catch (error) {
+    console.error('Erreur Push SADIKH:', error);
+    info.textContent = 'Erreur notifications : ' + error.message;
   }
-
-  if(!navigator.onLine){
-   throw new Error('Connectez-vous à Internet.');
-  }
-
-  info.textContent='Demande d’autorisation…';
-
-  const permission=await Notification.requestPermission();
-
-  if(permission!=='granted'){
-   throw new Error('Autorisation des notifications refusée.');
-  }
-
-  info.textContent='Installation du service worker…';
-
-  const registration=await navigator.serviceWorker.register('./sw.js');
-
-  info.textContent='Attente du service worker…';
-
-  const ready=await Promise.race([
-   navigator.serviceWorker.ready,
-   new Promise((_,reject)=>
-    setTimeout(()=>reject(
-     new Error('Service Worker bloqué. Vérifiez sw.js.')
-    ),15000)
-   )
-  ]);
-
-  if(!ready.active){
-   throw new Error('Service Worker non actif.');
-  }
-
-  info.textContent='Connexion à Supabase…';
-
-  const c=initClient();
-
-  if(!c) throw new Error('Configuration Supabase absente.');
-
-  let session=await c.auth.getSession();
-
-  if(!session.data.session){
-   const login=await c.auth.signInAnonymously();
-   if(login.error) throw login.error;
-   session={data:{session:login.data.session}};
-  }
-
-  info.textContent='Enregistrement du téléphone…';
-
-  const publicKey='BDlLTE3RCPfgfKy7ucDHRkBGjy2QPUny34QcBbpe10ZINfbmA1X0o2XyXc5B3mIYSONvkTeRdYbpXIJr8ZAjdtk';
-
- const padding='='.repeat((4-publicKey.length%4)%4);
-const raw=atob((publicKey+padding).replace(/-/g,'+').replace(/_/g,'/'));
-
-const applicationServerKey=Uint8Array.from(
- raw,c=>c.charCodeAt(0)
-);
-  let subscription=await ready.pushManager.getSubscription();
-
-  if(!subscription){
-   subscription=await ready.pushManager.subscribe({
-    userVisibleOnly:true,
-    applicationServerKey
-   });
-  }
-
-  info.textContent='Envoi à Supabase…';
-
-  const response=await fetch(
-   c.supabaseUrl+'/functions/v1/bulletin-poulailler',
-   {
-    method:'POST',
-    headers:{
-     'Content-Type':'application/json',
-     'apikey':cfg().key,
-     'Authorization':'Bearer '+session.data.session.access_token
-    },
-    body:JSON.stringify({
-     subscription:subscription.toJSON()
-    })
-   }
-  );
-
-  const result=await response.json();
-
-  if(!response.ok || !result.success){
-   throw new Error(result.error||'Erreur Supabase.');
-  }
-
-  info.textContent='Succès ! Téléphone enregistré.';
-
- } catch(error) {
-  console.error('Erreur notifications:',error);
-  info.textContent='Erreur : '+error.message;
- }
 };
 $('#netBadge').textContent=navigator.onLine?'Internet disponible':'Hors ligne';
